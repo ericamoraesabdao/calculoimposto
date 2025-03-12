@@ -1,4 +1,4 @@
-package com.desafio.calculoimposto.infra.security;
+package com.desafio.calculoimposto.service;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.User;
@@ -10,9 +10,9 @@ public class UserDetailsService {
     @Bean
     public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails user = User.builder()
-                .username("user") // Nome de usuário padrão
+                .username("user")
                 .password(passwordEncoder.encode("password"))
-                .roles("USER") // Defina a role
+                .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(user);
     }
