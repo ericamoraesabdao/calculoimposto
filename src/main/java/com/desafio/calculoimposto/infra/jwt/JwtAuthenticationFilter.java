@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,10 +15,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
-@AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -27,28 +24,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private UserDetailsService userDetailsService;
 
-    private static final List<String> PUBLIC_ROUTES = List.of(
-            "/user/register",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/swagger-ui.html"
-    );
+//   private static final List<String> PUBLIC_ROUTES = List.of(
+//           "/user/register",
+//           "/swagger-ui/**",
+//           "/v3/api-docs/**",
+//           "/swagger-ui.html"
+//   );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String requestURI = request.getRequestURI();
+ //       String requestURI = request.getRequestURI();
 
-        if (isPublicRoute(requestURI)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (isPublicRoute(requestURI)) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         String token = getTokenFromRequest(request);
 
-        if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)){
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             String username = jwtTokenProvider.getUsername(token);
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -67,9 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isPublicRoute(String requestURI) {
-        return PUBLIC_ROUTES.stream().anyMatch(requestURI::startsWith);
-    }
+//    private boolean isPublicRoute(String requestURI) {
+//        return PUBLIC_ROUTES.stream().anyMatch(requestURI::startsWith);
+//    }
 
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
