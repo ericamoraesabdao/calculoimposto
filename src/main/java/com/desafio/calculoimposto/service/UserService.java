@@ -5,12 +5,14 @@ import com.desafio.calculoimposto.model.Role;
 import com.desafio.calculoimposto.model.User;
 import com.desafio.calculoimposto.repository.RoleRepository;
 import com.desafio.calculoimposto.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -25,22 +27,33 @@ public class UserService {
         return bCryptPasswordEncoder.encode(rawPassword);
     }
 
-    public void registerUser(RegisterUserDto registerUserDto){
-        if (userRepository.existsByUsername(registerUserDto.getUsername())){
-            throw new RuntimeException("Usuário registrado");
+    @Transactional
+    public void registerUser(RegisterUserDto registerUserDto) {
+        if (userRepository.existsByUsername(registerUserDto.getUsername())) {
+            throw new RuntimeException("Usuário já registrado");
         }
 
         User user = new User();
         user.setUsername(registerUserDto.getUsername());
         user.setPassword(bCryptPasswordEncoder.encode(registerUserDto.getPassword()));
 
-        Set<Role> roles = registerUserDto.getRoles().stream()
-                .map(r -> roleRepository.findByName(r.name())
-                        .orElseThrow(() -> new RuntimeException("Role não encontrada: " + r.name())))
-                .collect(Collectors.toSet());
-        roleRepository.saveAll(roles);
+        Set<Role> roleEntities = new HashSet<>();
+        String roleName = registerUserDto.getRole().toUpperCase();
+        Optional<Role> optionalRole = roleRepository.findByName(roleName);
 
-        user.setRoles(roles);
+        Role role;
+
+        if (optionalRole.isEmpty()) {
+            role = new Role();
+            role.setName(roleName);
+            roleRepository.save(role);
+        } else {
+            role = optionalRole.get();
+        }
+
+        roleEntities.add(role);
+
+        user.setRoles(roleEntities);
         userRepository.save(user);
     }
 }
