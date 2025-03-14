@@ -1,8 +1,5 @@
 package com.desafio.calculoimposto.controller;
 
-
-
-
 import com.desafio.calculoimposto.dto.AuthResponseDto;
 import com.desafio.calculoimposto.dto.LoginDto;
 import com.desafio.calculoimposto.dto.RegisterUserDto;
