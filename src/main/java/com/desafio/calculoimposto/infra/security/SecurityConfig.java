@@ -42,6 +42,7 @@ public class SecurityConfig {
                             "/swagger-ui.html"
                     ).permitAll();
                     authorize.requestMatchers(HttpMethod.POST, "/user/register").permitAll();
+                    authorize.requestMatchers(HttpMethod.POST, "/user/login").permitAll();
                     authorize.anyRequest().authenticated();
                 }).httpBasic(Customizer.withDefaults());
 
