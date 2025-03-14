@@ -24,24 +24,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private UserDetailsService userDetailsService;
 
-//   private static final List<String> PUBLIC_ROUTES = List.of(
-//           "/user/register",
-//           "/swagger-ui/**",
-//           "/v3/api-docs/**",
-//           "/swagger-ui.html"
-//   );
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
- //       String requestURI = request.getRequestURI();
-
-//        if (isPublicRoute(requestURI)) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
         String token = getTokenFromRequest(request);
 
@@ -64,17 +50,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-//    private boolean isPublicRoute(String requestURI) {
-//        return PUBLIC_ROUTES.stream().anyMatch(requestURI::startsWith);
-//    }
-
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            return bearerToken.substring(7, bearerToken.length());
         }
-
         return null;
     }
 }
