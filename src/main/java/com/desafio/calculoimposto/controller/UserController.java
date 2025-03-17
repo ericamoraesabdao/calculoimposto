@@ -1,8 +1,7 @@
 package com.desafio.calculoimposto.controller;
 
-import com.desafio.calculoimposto.dto.AuthResponseDto;
-import com.desafio.calculoimposto.dto.LoginDto;
-import com.desafio.calculoimposto.dto.RegisterUserDto;
+import com.desafio.calculoimposto.dto.*;
+import com.desafio.calculoimposto.exception.ResourceNotFoundException;
 import com.desafio.calculoimposto.service.AuthService;
 import com.desafio.calculoimposto.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +23,29 @@ public class UserController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+        try {
+            String token = authService.login(loginDto);
 
-        String token = authService.login(loginDto);
+            AuthResponseDto authResponseDto = new AuthResponseDto();
+            authResponseDto.setAccessToken(token);
 
-        AuthResponseDto authResponseDto = new AuthResponseDto();
-        authResponseDto.setAccessToken(token);
-
-        return new ResponseEntity<>(authResponseDto, HttpStatus.OK);
+            return new ResponseEntity<>(authResponseDto, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            ErrorDto error = new ErrorDto(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @PostMapping("/register")
-    public void registerUser(@RequestBody RegisterUserDto registerUserDto){
-        userService.registerUser(registerUserDto);
+    public ResponseEntity<RegisterUserResponseDto> registerUser(@RequestBody RegisterUserDto registerUserDto) {
+        Long generatedId = userService.registerUser(registerUserDto);
+
+        RegisterUserResponseDto response = new RegisterUserResponseDto();
+        response.setId(generatedId);
+        response.setUsername(registerUserDto.getUsername());
+        response.setRole(registerUserDto.getRole());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

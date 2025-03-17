@@ -1,6 +1,7 @@
 package com.desafio.calculoimposto.service;
 
 import com.desafio.calculoimposto.dto.LoginDto;
+import com.desafio.calculoimposto.exception.ResourceNotFoundException;
 import com.desafio.calculoimposto.infra.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +30,7 @@ public class AuthService {
 
             return jwtTokenProvider.generateToken(authentication);
         } catch (Exception e) {
-            throw new RuntimeException("UserName ou password inválidos", e);
+            throw new ResourceNotFoundException("Usuário inexistente ou senha inválida");
         }
     }
 }
