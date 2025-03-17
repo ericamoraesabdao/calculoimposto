@@ -28,9 +28,9 @@ public class UserService {
     }
 
     @Transactional
-    public void registerUser(RegisterUserDto registerUserDto) {
+    public Long registerUser(RegisterUserDto registerUserDto) {
         if (userRepository.existsByUsername(registerUserDto.getUsername())) {
-            throw new RuntimeException("Usuário já registrado");
+            throw new IllegalArgumentException("Usuário já registrado");
         }
 
         User user = new User();
@@ -38,7 +38,7 @@ public class UserService {
         user.setPassword(bCryptPasswordEncoder.encode(registerUserDto.getPassword()));
 
         Set<Role> roleEntities = new HashSet<>();
-        String roleName = registerUserDto.getRole().toUpperCase();
+        String roleName = "ROLE_" + registerUserDto.getRole().toUpperCase();
         Optional<Role> optionalRole = roleRepository.findByName(roleName);
 
         Role role;
@@ -55,5 +55,6 @@ public class UserService {
 
         user.setRoles(roleEntities);
         userRepository.save(user);
+        return user.getId();
     }
 }
