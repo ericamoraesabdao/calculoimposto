@@ -26,14 +26,14 @@ public class JwtTokenProvider {
 
         String token = Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date())
+                .setIssuedAt(currentDate)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS256, key())
                 .compact();
         return token;
     }
 
-    private Key key() {
+    protected Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 

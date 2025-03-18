@@ -33,9 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String token = getTokenFromRequest(request);
 
+        String token = getTokenFromRequest(request);
+
+        if (!StringUtils.hasText(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 String username = jwtTokenProvider.getUsername(token);
 
@@ -50,11 +56,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } else {
+                throw new RuntimeException("Token inválido ou expirado");
             }
 
         } catch (Exception ex) {
-
-            ex.printStackTrace();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             Map<String, String> errorDetails = new HashMap<>();
@@ -62,6 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonResponse = objectMapper.writeValueAsString(errorDetails);
             response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
             return;
         }
         filterChain.doFilter(request, response);
