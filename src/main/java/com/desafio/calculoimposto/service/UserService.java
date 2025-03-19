@@ -54,7 +54,8 @@ public class UserService {
         roleEntities.add(role);
 
         user.setRoles(roleEntities);
-        userRepository.save(user);
-        return user.getId();
+
+        User savedUser = userRepository.save(user);
+        return savedUser.getId();
     }
 }

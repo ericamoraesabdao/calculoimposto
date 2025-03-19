@@ -33,8 +33,6 @@ public class TipoImpostoService {
         } catch (DataIntegrityViolationException e) {
             throw new UniqueConstraintViolationException("O imposto já existe");
         }
-
-
     }
 
     public TipoImpostoDto listaImpostoPorID(Long id) {
@@ -44,16 +42,12 @@ public class TipoImpostoService {
     }
 
     public boolean impostoExiste(Long id) {
-
         return tipoImpostoRepository.existsById(id);
     }
 
     public void excluirImposto(Long id) {
-        if (impostoExiste(id)) {
-            tipoImpostoRepository.deleteById(id);
-        } else {
-            TipoImposto existeImposto = tipoImpostoRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("O imposto não foi deletado pois o Id não foi encontrado."));
-        }
+        TipoImposto existeImposto = tipoImpostoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("O imposto não foi deletado pois o Id não foi encontrado."));
+        tipoImpostoRepository.deleteById(id);
     }
 }
