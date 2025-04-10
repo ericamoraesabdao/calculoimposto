@@ -23,6 +23,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Install dependecies
+        run: mvn clean install
+
       - name: Load environment variables
         run: |
           if [ -f .env ]; then
