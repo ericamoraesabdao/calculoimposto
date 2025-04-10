@@ -23,6 +23,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Load environment variables
+        run: |
+          if [ -f .env ]; then
+            echo "Loading environment variables from .env"
+            export $(cat .env | xargs)
+          fi
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
