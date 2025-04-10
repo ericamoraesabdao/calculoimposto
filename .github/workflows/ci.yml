@@ -27,13 +27,14 @@ jobs:
         run: |
           if [ -f .env ]; then
             echo "Loading environment variables from .env"
-            export $(cat .env | xargs)
+            export $(grep -v '^#' .env | xargs)
           fi
+          printenv | grep -v "PATH" >> $GITHUB_ENV
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
       - name: Run tests
         env:
-          $(cat .env | xargs)
+          SPRING_PROFILES_ACTIVE: test
         run: mvn test
