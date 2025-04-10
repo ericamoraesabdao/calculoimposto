@@ -34,4 +34,6 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: Run tests
+        env:
+          $(cat .env | xargs)
         run: mvn test
