@@ -23,14 +23,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install dependencies with Maven
-        run: mvn clean install
-
-      - name: Verify with Maven
-        run: mvn clean verify
-
       - name: Build with Maven
-        run: mvn clean package
+        run: mvn -B package --file pom.xml
 
       - name: Run tests
         run: mvn test
