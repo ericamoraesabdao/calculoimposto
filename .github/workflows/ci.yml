@@ -21,19 +21,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y podman podman-compose
 
-      - name: Set environment variables
-        run: |
-          echo "POSTGRES_DB=calculoimposto" >> .env
-          echo "POSTGRES_USER=postgres" >> .env
-          echo "POSTGRES_PASSWORD=postgres" >> .env
-          echo "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/calculoimposto" >> .env
-          echo "SPRING_DATASOURCE_USERNAME=postgres" >> .env
-          echo "SPRING_DATASOURCE_PASSWORD=postgres" >> .env
-
       - name: Start services with Podman-Compose
         run: |
-          export COMPOSE_FILE=podman-compose.yaml
-          podman-compose up -d
+          podman-compose --env-file .env.compose up -d
 
       - name: Wait for PostgreSQL
         run: |

@@ -4,10 +4,12 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres-container
+    env_file:
+      - .env.container
     environment:
-      POSTGRES_DB: calculoimposto
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
       - calculoimposto
     volumes:
@@ -24,13 +26,15 @@ services:
 
   spring-app:
     build:
-      context: ..
-      dockerfile: podman/Podfile
+      context: .
+      dockerfile: Podfile
     container_name: calculo-container
+    env_file:
+      - .env.container
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/calculoimposto
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-container:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     restart: on-failure
     networks:
       - calculoimposto
