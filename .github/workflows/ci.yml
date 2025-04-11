@@ -11,7 +11,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,30 +29,27 @@ jobs:
           sudo podman info
 
       - name: Start services with Podman-Compose
-        run: |
-          podman-compose --env-file .env.container up -d
+        run: podman-compose --env-file .env.container up -d
+
+      - name: Check container status
+        run: podman ps -a
+
+      - name: Show PostgreSQL logs
+        run: podman logs postgres-container
 
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          for i in {1..30}; do
             podman exec postgres-container pg_isready -U postgres -d calculoimposto && echo "PostgreSQL is ready" && exit 0
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
           echo "PostgreSQL failed to start" && exit 1
 
-      - name: Test database connection
-        run: |
-          podman exec postgres-container pg_isready -U postgres -d calculoimposto
-
       - name: Run tests
         env:
           SPRING_PROFILES_ACTIVE: test
         run: mvn test -X
-
-      - name: Show PostgreSQL logs
-        if: failure()
-        run: podman logs postgres-container
 
       - name: Stop services
         if: always()
