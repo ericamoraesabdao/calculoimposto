@@ -9,33 +9,40 @@ on:
       - master
 
 jobs:
-  test:
-    name: Run Unit Tests
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Install dependecies
-        run: mvn clean install
-
-      - name: Load environment variables
+      - name: Install Podman and Podman-Compose
         run: |
-          if [ -f .env ]; then
-            echo "Loading environment variables from .env"
-            export $(grep -v '^#' .env | xargs)
-          fi
-          printenv | grep -E 'DB_HOST|DB_PORT|DB_NAME|DB_USERNAME|DB_PASSWORD' >> $GITHUB_ENV
+          sudo apt-get update
+          sudo apt-get install -y podman podman-compose
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      - name: Set environment variables
+        run: |
+          echo "POSTGRES_DB=calculoimposto" >> .env
+          echo "POSTGRES_USER=postgres" >> .env
+          echo "POSTGRES_PASSWORD=postgres" >> .env
+          echo "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/calculoimposto" >> .env
+          echo "SPRING_DATASOURCE_USERNAME=postgres" >> .env
+          echo "SPRING_DATASOURCE_PASSWORD=postgres" >> .env
+
+      - name: Start services with Podman-Compose
+        run: |
+          export COMPOSE_FILE=podman-compose.yaml
+          podman-compose up -d
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..10}; do
+            podman exec postgres-container pg_isready -U postgres -d calculoimposto && echo "PostgreSQL is ready" && exit 0
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          echo "PostgreSQL failed to start" && exit 1
 
       - name: Run tests
         env:
