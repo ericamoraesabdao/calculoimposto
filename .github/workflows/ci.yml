@@ -21,6 +21,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y podman podman-compose
 
+      - name: Install Maven
+        run: sudo apt-get install -y maven
+
       - name: Start services with Podman-Compose
         run: |
           podman-compose --env-file .env.container up -d
