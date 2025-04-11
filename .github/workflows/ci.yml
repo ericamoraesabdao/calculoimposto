@@ -23,7 +23,7 @@ jobs:
 
       - name: Start services with Podman-Compose
         run: |
-          podman-compose --env-file .env.compose up -d
+          podman-compose --env-file .env.container up -d
 
       - name: Wait for PostgreSQL
         run: |
@@ -38,3 +38,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
         run: mvn test
+
+      - name: Stop services
+        if: always()
+        run: podman-compose down
