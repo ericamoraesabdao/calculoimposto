@@ -28,8 +28,7 @@ jobs:
           sudo podman system migrate
           sudo podman info
 
-      - name: Build image calculoimposto_spring-app
-        run: podman build -f Podfile -t calculoimposto_spring-app .
+
 
       - name: Start services with Podman-Compose
         run: sudo podman-compose --env-file .env.container up -d
