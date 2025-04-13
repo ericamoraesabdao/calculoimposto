@@ -23,10 +23,21 @@ jobs:
       - name: Install Maven
         run: sudo apt-get install -y maven
 
+      - name: Check Podman and Podman-Compose versions
+        run: |
+          podman --version
+          podman-compose --version
+
       - name: Configure Podman
         run: |
           sudo podman system migrate
           sudo podman info
+
+      - name: Set environment variables
+        run: |
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.container
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env.container
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.container
 
       - name: Build image calculoimposto_spring-app
         run: sudo podman build -f Podfile -t calculoimposto_spring-app .
@@ -38,12 +49,13 @@ jobs:
         run: podman ps -a
 
       - name: Show PostgreSQL logs
+        if: failure()
         run: podman logs postgres-container
 
       - name: Wait for PostgreSQL
         run: |
           for i in {1..30}; do
-            podman exec postgres-container pg_isready -U postgres -d calculoimposto && echo "PostgreSQL is ready" && exit 0
+            podman exec postgres-container psql -U ${{ secrets.DB_USERNAME }} -d ${{ secrets.DB_NAME }} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
