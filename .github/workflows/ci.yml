@@ -20,7 +20,6 @@ jobs:
           if [ -f .env ]; then
             echo "Loading environment variables from .env"
             export $(grep -v '^#' .env | xargs)
-            # Salvar variáveis no ambiente do GitHub Actions
             printenv | grep -E 'DB_HOST|DB_PORT|DB_NAME|DB_USERNAME|DB_PASSWORD' >> $GITHUB_ENV
           fi
 
@@ -42,11 +41,23 @@ jobs:
           sudo podman system migrate
           sudo podman info
 
+      - name: Debug Podman-Compose
+        run: |
+          echo "Checking Podman-Compose configuration..."
+          podman-compose config
+
       - name: Start services with Podman-Compose
-        run: sudo podman-compose --env-file .env up -d
+        run: |
+          export COMPOSE_FILE=podman-compose.yaml
+          podman-compose --env-file .env up -d
+        working-directory: .
 
       - name: Check container status
         run: podman ps -a
+
+      - name: Show Podman-Compose logs
+        if: always()
+        run: podman-compose logs
 
       - name: Show PostgreSQL logs
         if: failure()
@@ -55,7 +66,7 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           for i in {1..30}; do
-            podman exec postgres-container psql -U ${{ secrets.DB_USERNAME }} -d ${{ secrets.DB_NAME }} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
+            podman exec postgres-container psql -U ${DB_USERNAME} -d ${DB_NAME} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
