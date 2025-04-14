@@ -4,9 +4,9 @@ WORKDIR /calculoimposto
 COPY ./pom.xml .
 RUN mvn dependency:go-offline -B
 
-COPY ./src ./src
+COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn test && mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-slim
 
