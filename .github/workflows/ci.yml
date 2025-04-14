@@ -35,15 +35,12 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.container
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env.container
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.container
-
-      - name: Build image calculoimposto_spring-app
-        run: sudo podman build -f Podfile -t calculoimposto_spring-app .
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
       - name: Start services with Podman-Compose
-        run: sudo podman-compose --env-file .env.container up -d
+        run: sudo podman-compose --env-file .env up -d
 
       - name: Check container status
         run: podman ps -a
