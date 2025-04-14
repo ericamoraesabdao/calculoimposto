@@ -1,92 +1,42 @@
-name: CI/CD Pipeline
+name: Run Tests on Pull Request
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
-      - master
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
+
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
+
     steps:
+      # Checkout do código do repositório
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Load environment variables
-        run: |
-          if [ -f .env ]; then
-            echo "Loading environment variables from .env"
-            export $(grep -v '^#' .env | xargs)
-            printenv | grep -E 'DB_HOST|DB_PORT|DB_NAME|DB_USERNAME|DB_PASSWORD' >> $GITHUB_ENV
-          fi
+      # Configuração do JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Install Podman and Podman-Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y podman podman-compose
+      # Configuração do cache do Maven para acelerar builds
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Install Maven
-        run: sudo apt-get install -y maven
 
-      - name: Check Podman and Podman-Compose versions
-        run: |
-          podman --version
-          podman-compose --version
-
-      - name: Configure Podman
-        run: |
-          sudo podman system migrate
-          sudo podman info
-
-      - name: Debug Podman-Compose
-        run: |
-          echo "Checking Podman-Compose configuration..."
-          podman-compose config
-
-      - name: Start services with Podman-Compose
-        run: |
-          export COMPOSE_FILE=podman-compose.yaml
-          podman-compose --env-file .env up -d
-        working-directory: .
-
-      - name: Check container status
-        run: podman ps -a
-
-      - name: Show Podman-Compose logs
-        if: always()
-        run: podman-compose logs
-
-      - name: Show PostgreSQL logs
-        if: failure()
-        run: podman logs postgres-container
-
-      - name: Wait for PostgreSQL
-        run: |
-          for i in {1..30}; do
-            podman exec postgres-container psql -U ${DB_USERNAME} -d ${DB_NAME} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
-            echo "Waiting for PostgreSQL..."
-            sleep 5
-          done
-          echo "PostgreSQL failed to start" && exit 1
-
-      - name: Run tests
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          SPRING_PROFILES_ACTIVE: test
-        run: mvn test -X
-
-      - name: Debug environment
-        if: always()
-        run: |
-          printenv | grep -E 'DB_HOST|DB_PORT|DB_NAME|DB_USERNAME|DB_PASSWORD'
-
-      - name: Stop services
-        if: always()
-        run: podman-compose down
+      # Executa os testes com Maven
+      - name: Run Maven tests
+        run: mvn clean test
