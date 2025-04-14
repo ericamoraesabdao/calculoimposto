@@ -7,9 +7,9 @@ services:
     env_file:
       - .env.container
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: calculoimposto
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     networks:
       - calculoimposto
     volumes:
@@ -32,9 +32,9 @@ services:
     env_file:
       - .env.container
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-container:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-container:5432/calculoimposto
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     restart: on-failure
     networks:
       - calculoimposto
