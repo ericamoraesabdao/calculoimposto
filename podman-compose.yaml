@@ -27,7 +27,7 @@ services:
   spring-app:
     build:
       context: .
-      dockerfile: Podfile
+      dockerfile: ./Podfile
     container_name: calculo-container
     env_file:
       - .env

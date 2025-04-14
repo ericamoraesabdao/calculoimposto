@@ -4,7 +4,7 @@ WORKDIR /calculoimposto
 COPY ./pom.xml .
 RUN mvn dependency:go-offline -B
 
-COPY src ./src
+COPY ./src ./src
 
 RUN mvn test && mvn clean package -DskipTests
 
