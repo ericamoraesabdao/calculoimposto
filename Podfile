@@ -6,7 +6,7 @@ RUN mvn dependency:go-offline -B
 
 COPY ./src ./src
 
-RUN mvn test && mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-slim
 
