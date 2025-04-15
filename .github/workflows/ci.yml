@@ -50,8 +50,7 @@ jobs:
           export TMPDIR=/tmp
           echo "export TMPDIR=/tmp" >> $GITHUB_ENV
 
-      - name: Build spring-app image
-        run: sudo podman build -t spring-app -f ./Podfile .
+
 
       - name: Start services with Podman-Compose
         run: |
