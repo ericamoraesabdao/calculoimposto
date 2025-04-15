@@ -36,6 +36,11 @@ jobs:
 
       - name: Set Podman runtime to runc
         run: |
+          if [ ! -f /etc/containers/containers.conf ]; then
+            echo "Creating default containers.conf"
+            sudo mkdir -p /etc/containers
+            sudo podman info --format '{{.Host.OCIRuntime.Name}}' > /etc/containers/containers.conf
+          fi
           sudo sed -i 's/^runtime = "crun"/runtime = "runc"/' /etc/containers/containers.conf
           sudo systemctl restart podman
 
