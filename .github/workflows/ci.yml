@@ -34,53 +34,41 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y podman podman-compose
 
-
-      - name: Install Maven
-        run: sudo apt-get install -y maven
-
-      - name: Check Podman and Podman-Compose versions
+      - name: Set Podman runtime to runc
         run: |
-          podman --version
-          podman-compose --version
+          sudo sed -i 's/^runtime = "crun"/runtime = "runc"/' /etc/containers/containers.conf
+          sudo systemctl restart podman
 
-      - name: Set Podman runtime directory
-        run: echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
-
-      - name: Configure Podman
+      - name: Set temporary directory for Podman
         run: |
-          sudo podman system migrate
-          sudo podman info
-
-      - name: Debug Podman-Compose
-        run: |
-          echo "Checking Podman-Compose configuration..."
-          podman-compose config
+          export TMPDIR=/tmp
+          echo "export TMPDIR=/tmp" >> $GITHUB_ENV
 
       - name: Build spring-app image
-        run: podman build -t spring-app -f ./Podfile .
+        run: sudo podman build -t spring-app -f ./Podfile .
 
       - name: Start services with Podman-Compose
         run: |
           export COMPOSE_FILE=podman-compose.yaml
           export XDG_RUNTIME_DIR=/run/user/$(id -u)
-          podman-compose --env-file .env up -d
+          sudo podman-compose --env-file .env up -d
         working-directory: .
 
       - name: Check container status
-        run: podman ps -a
+        run: sudo podman ps -a
 
       - name: Show Podman-Compose logs
         if: always()
-        run: podman-compose logs
+        run: sudo podman-compose logs
 
       - name: Show PostgreSQL logs
         if: failure()
-        run: podman logs postgres-container
+        run: sudo podman logs postgres-container
 
       - name: Wait for PostgreSQL
         run: |
           for i in {1..30}; do
-            podman exec postgres-container psql -U ${DB_USERNAME} -d ${DB_NAME} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
+            sudo podman exec postgres-container psql -U ${DB_USERNAME} -d ${DB_NAME} -c "SELECT 1" && echo "PostgreSQL is ready" && exit 0
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
@@ -103,4 +91,4 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: podman-compose down
+        run: sudo podman-compose down
