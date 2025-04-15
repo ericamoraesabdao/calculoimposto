@@ -43,6 +43,9 @@ jobs:
           podman --version
           podman-compose --version
 
+      - name: Set Podman runtime directory
+        run: echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
+
       - name: Configure Podman
         run: |
           sudo podman system migrate
@@ -53,9 +56,13 @@ jobs:
           echo "Checking Podman-Compose configuration..."
           podman-compose config
 
+      - name: Build spring-app image
+        run: podman build -t spring-app -f ./Podfile .
+
       - name: Start services with Podman-Compose
         run: |
           export COMPOSE_FILE=podman-compose.yaml
+          export XDG_RUNTIME_DIR=/run/user/$(id -u)
           podman-compose --env-file .env up -d
         working-directory: .
 
