@@ -50,25 +50,12 @@ jobs:
           export TMPDIR=/tmp
           echo "export TMPDIR=/tmp" >> $GITHUB_ENV
 
-
-
       - name: Start services with Podman-Compose
         run: |
           export COMPOSE_FILE=podman-compose.yaml
           export XDG_RUNTIME_DIR=/run/user/$(id -u)
           sudo podman-compose --env-file .env up -d
         working-directory: .
-
-      - name: Check container status
-        run: sudo podman ps -a
-
-      - name: Show Podman-Compose logs
-        if: always()
-        run: sudo podman-compose logs
-
-      - name: Show PostgreSQL logs
-        if: failure()
-        run: sudo podman logs postgres-container
 
       - name: Wait for PostgreSQL
         run: |
@@ -88,11 +75,6 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SPRING_PROFILES_ACTIVE: test
         run: mvn test -X
-
-      - name: Debug environment
-        if: always()
-        run: |
-          printenv | grep -E 'DB_HOST|DB_PORT|DB_NAME|DB_USERNAME|DB_PASSWORD'
 
       - name: Stop services
         if: always()
